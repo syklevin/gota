@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/gonum/matrix/mat64"
-	"github.com/kniren/gota/series"
+	"github.com/syklevin/gota/series"
 )
 
 func TestDataFrame_New(t *testing.T) {
