@@ -921,6 +921,37 @@ func TestBools(t *testing.T) {
 	}
 }
 
+func TestTimes(t *testing.T) {
+
+	TimeFormat = "2006-01-02"
+
+	table := []struct {
+		series   Series
+		expected string
+	}{
+		{
+			Times([]string{"XYZ", "2016-12-12", "2016-01-01", "f"}),
+			"[NaN 2016-12-12 2016-01-01 NaN]",
+		},
+	}
+	for testnum, test := range table {
+		if err := test.series.Err; err != nil {
+			t.Errorf("Test:%v\nError:%v", testnum, err)
+		}
+		expected := test.expected
+		received := fmt.Sprint(test.series)
+		if expected != received {
+			t.Errorf(
+				"Test:%v\nExpected:\n%v\nReceived:\n%v",
+				testnum, expected, received,
+			)
+		}
+		if err := checkTypes(test.series); err != nil {
+			t.Errorf("Test:%v\nError:%v", testnum, err)
+		}
+	}
+}
+
 func TestSeries_Copy(t *testing.T) {
 	tests := []Series{
 		Strings([]string{"1", "2", "3", "a", "b", "c"}),

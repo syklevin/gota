@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"sort"
 	"strings"
+	"time"
 )
 
 // Series is a data structure designed for operating on arrays of elements that
@@ -77,6 +78,11 @@ type boolElements []boolElement
 func (e boolElements) Len() int           { return len(e) }
 func (e boolElements) Elem(i int) Element { return &e[i] }
 
+type timeElements []timeElement
+
+func (e timeElements) Len() int           { return len(e) }
+func (e timeElements) Elem(i int) Element { return &e[i] }
+
 // ElementValue represents the value that can be used for marshaling or
 // unmarshaling Elements.
 type ElementValue interface{}
@@ -106,6 +112,7 @@ const (
 	Int         = "int"
 	Float       = "float"
 	Bool        = "bool"
+	Time        = "time"
 )
 
 // Indexes represent the elements that can be used for selecting a subset of
@@ -136,6 +143,8 @@ func New(values interface{}, t Type, name string) Series {
 			ret.elements = make(floatElements, n)
 		case Bool:
 			ret.elements = make(boolElements, n)
+		case Time:
+			ret.elements = make(timeElements, n)
 		default:
 			panic(fmt.Sprintf("unknown type %v", t))
 		}
@@ -171,6 +180,13 @@ func New(values interface{}, t Type, name string) Series {
 		}
 	case []bool:
 		v := values.([]bool)
+		l := len(v)
+		preAlloc(l)
+		for i := 0; i < l; i++ {
+			ret.elements.Elem(i).Set(v[i])
+		}
+	case []time.Time:
+		v := values.([]time.Time)
 		l := len(v)
 		preAlloc(l)
 		for i := 0; i < l; i++ {
@@ -224,6 +240,11 @@ func Bools(values interface{}) Series {
 	return New(values, Bool, "")
 }
 
+// Times is a constructor for a Time Series
+func Times(values interface{}) Series {
+	return New(values, Time, "")
+}
+
 // Empty returns an empty Series of the same type
 func (s Series) Empty() Series {
 	return New([]int{}, s.t, s.Name)
@@ -245,6 +266,8 @@ func (s *Series) Append(values interface{}) {
 		s.elements = append(s.elements.(floatElements), news.elements.(floatElements)...)
 	case Bool:
 		s.elements = append(s.elements.(boolElements), news.elements.(boolElements)...)
+	case Time:
+		s.elements = append(s.elements.(timeElements), news.elements.(timeElements)...)
 	}
 }
 
@@ -300,6 +323,12 @@ func (s Series) Subset(indexes Indexes) Series {
 		elements := make(boolElements, len(idx))
 		for k, i := range idx {
 			elements[k] = s.elements.(boolElements)[i]
+		}
+		ret.elements = elements
+	case Time:
+		elements := make(timeElements, len(idx))
+		for k, i := range idx {
+			elements[k] = s.elements.(timeElements)[i]
 		}
 		ret.elements = elements
 	default:
