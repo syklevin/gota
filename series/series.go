@@ -491,6 +491,9 @@ func (s Series) Copy() Series {
 	case Int:
 		elements = make(intElements, s.Len())
 		copy(elements.(intElements), s.elements.(intElements))
+	case Time:
+		elements = make(timeElements, s.Len())
+		copy(elements.(timeElements), s.elements.(timeElements))
 	}
 	ret := Series{
 		Name:     name,
